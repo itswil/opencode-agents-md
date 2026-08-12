@@ -110,6 +110,7 @@ pnpm test       # Run tests (vitest)
 ### Types
 
 - Prefer explicit return types on exported functions; use `zod` inference for data shapes coming from the API.
+- Use `type` instead of `interface` when declaring types.
 
 ## Asking Before Acting
 

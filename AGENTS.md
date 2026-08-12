@@ -100,7 +100,7 @@ These may be installed without asking. Anything else requires explicit approval:
 - **Utilities**: `date-fns`, `nanoid`
 - **Dev/quality**: `@playwright/test`
 - **Server**: `hono`, `@hono/node-server`
-- **Database/ORM**: `drizzle-orm`, `drizzle-kit`
+- **Database/ORM**: `drizzle-orm`, `drizzle-kit`, `better-sqlite3` (SQLite), `@libsql/client` (Turso)
 - **Authentication**: `better-auth`, `bcryptjs`
 
 ## Linting & Formatting

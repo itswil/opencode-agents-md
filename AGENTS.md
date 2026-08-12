@@ -23,26 +23,20 @@ pnpm lint:fix   # Lint + autofix (oxlint --fix)
 pnpm test       # Run tests (vitest)
 ```
 
-## Git Hooks (Husky)
+## Git Workflow
 
-Husky is configured in `.husky/`. The `pre-commit` hook runs `pnpm fmt` and `pnpm lint:fix`. Never check in unformatted or lint-failing code. Run `pnpm fmt` and `pnpm lint` yourself before every commit — never rely on the hook alone.
-
-Work on a feature branch per task and open a PR when done.
-
-## Commit Messages
-
-Use [Conventional Commits](https://www.conventionalcommits.org/):
-
-- `feat(component): add new feature`
-- `fix: resolve bug`
-- `style: update styling`
-- `perf: improve performance`
-- `docs: update documentation`
-- `refactor: restructure code`
-- `test: add/update tests`
-- `chore: maintenance tasks`
-
-Scope in `()` is optional. Add `!` before `:` for breaking changes (e.g., `feat!: breaking change`).
+- Husky is configured in `.husky/`. The `pre-commit` hook runs `pnpm fmt` and `pnpm lint:fix`. Never check in unformatted or lint-failing code. Run `pnpm fmt` and `pnpm lint` yourself before every commit — never rely on the hook alone.
+- Work on a feature branch per task and open a PR when done.
+- Use [Conventional Commits](https://www.conventionalcommits.org/):
+  - `feat(component): add new feature`
+  - `fix: resolve bug`
+  - `style: update styling`
+  - `perf: improve performance`
+  - `docs: update documentation`
+  - `refactor: restructure code`
+  - `test: add/update tests`
+  - `chore: maintenance tasks`
+  - Scope in `()` is optional. Add `!` before `:` for breaking changes (e.g., `feat!: breaking change`).
 
 ## Stack
 
@@ -58,7 +52,6 @@ Scope in `()` is optional. Add `!` before `:` for breaking changes (e.g., `feat!
 
 - The entry point is `src/main.tsx`. It creates the root and wraps `<App />` in `<StrictMode>`.
 - React components are default-exported function components (see `src/App.tsx`).
-- Use Tailwind utility classes via `className` in JSX. Do not use custom CSS.
 - Colocate tests next to source as `*.test.tsx`. Use `vitest-browser-react`'s `render` and `expect.element(...)` assertions, e.g.:
   ```tsx
   import { render } from "vitest-browser-react";
@@ -71,15 +64,52 @@ Scope in `()` is optional. Add `!` before `:` for breaking changes (e.g., `feat!
   });
   ```
 - JSX/ESM imports resolve both `.tsx` and `.jsx` extensions.
-- Styling lives in `src/index.css`. Keep Tailwind the source of truth for design decisions.
 - New code goes in `src/components/` (UI), `src/hooks/` (reusable logic), `src/lib/` (utilities), and `src/types/` (shared types). Use kebab-case filenames; component names are PascalCase.
 - Use `import.meta.env.VITE_*` for environment variables. Never commit `.env*` files or hardcode secrets.
+- Styling lives in `src/index.css`. Use Tailwind utility classes via `className` in JSX and Tailwind's `@theme` tokens for colors/spacing instead of arbitrary values. Do not use custom CSS or `!important`.
+
+## Code Style
+
+- Write simple, readable, reusable code. Prefer straightforward solutions over clever or complicated ones — clarity beats brevity.
+- Prefer functional TypeScript code.
+- Prefer `const` arrow functions over `function` declarations.
+- Prefer small, focused components over large ones; extract reusable UI into `src/components/`.
 
 ## Technical Rules
 
 - Keep TypeScript clean under `tsc -b`. No `any`, no `// @ts-ignore` — fix types properly.
-- State/data fetching uses plain React hooks and the browser fetch API by default. Don't add libraries (React Query, Zustand, axios, etc.) unless the user asks.
-- Prefer small, focused components over large ones. Extract reusable UI into `src/components/`.
+- State/data fetching uses plain React hooks and the browser fetch API by default. The Allowed Packages list is the exception — don't add other libraries unless the user asks.
+- Avoid writing raw SQL; use Drizzle ORM's query builder and schema API instead.
+
+### Accessibility
+
+- Use semantic HTML and proper ARIA attributes; keep labels associated with inputs. Test keyboard navigation on interactive elements.
+
+### Error Handling
+
+- Handle errors explicitly with `try/catch` (or `.catch`) and show user-facing error states. Don't silently swallow errors — log them.
+
+### Security
+
+- Sanitize and validate all user input with `zod`. Never log secrets or tokens. Use parameterized queries (Drizzle query builder covers this).
+- Server actions/routes must re-validate auth via `better-auth` — don't trust client-supplied identity.
+
+### Testing
+
+- Write tests for new logic and components; keep them behavioral (outcomes), not implementation-focused.
+- Never commit `test.skip` or `test.only`.
+
+### Naming
+
+- Use descriptive names over abbreviations (`fetchUserProfile`, not `getU`). Boolean props read as questions (`isLoading`, `hasError`).
+
+### Performance
+
+- Memoize expensive computations; avoid re-creating handlers in hot paths when it matters. Keep the bundle small — lazy-load route components.
+
+### Types
+
+- Prefer explicit return types on exported functions; use `zod` inference for data shapes coming from the API.
 
 ## Asking Before Acting
 

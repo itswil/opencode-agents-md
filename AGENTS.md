@@ -122,7 +122,7 @@ pnpm test       # Run tests (vitest)
 
 These may be installed without asking. Anything else requires explicit approval:
 
-- **Routing**: `@tanstack/react-router`
+- **Routing**: `@tanstack/react-router`, `@tanstack/react-start`
 - **Data fetching**: `@tanstack/react-query`
 - **Forms/validation**: `@tanstack/react-form`, `zod`
 - **Client state**: `@tanstack/react-store`

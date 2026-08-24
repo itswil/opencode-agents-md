@@ -78,6 +78,7 @@ pnpm test       # Run tests (vitest)
 ## Technical Rules
 
 - Keep TypeScript clean under `tsc -b`. No `any`, no `// @ts-ignore` — fix types properly.
+- For ad-hoc scripting (automation, one-off tasks, file processing), prefer Bun over Python or Perl where possible.
 - State/data fetching uses plain React hooks and the browser fetch API by default. The Allowed Packages list is the exception — don't add other libraries unless the user asks.
 - Avoid writing raw SQL; use Drizzle ORM's query builder and schema API instead.
 

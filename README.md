@@ -3,7 +3,7 @@
 Global [OpenCode](https://opencode.ai) configuration. Cloned to the XDG config directory:
 
 ```bash
-git clone <this-repo> ~/.config/opencode
+git clone https://github.com/itswil/opencode-agents-md ~/.config/opencode
 ```
 
 `~/.config/opencode` is where OpenCode reads its global config from. After cloning, OpenCode picks up:

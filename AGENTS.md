@@ -1,31 +1,47 @@
 # Agent Instructions (Global)
 
-This file holds conventions for projects built from the `starter` template. The template uses React 19, Vite, TypeScript, and TailwindCSS v4. These rules apply globally. You can drop per-project `AGENTS.md` files.
+This file holds conventions for projects built from the [Cove](https://github.com/mugnavo/cove) template (formerly TanStarter). The template uses React 19, TanStack Start, TailwindCSS v4, Drizzle ORM, and Better Auth. These rules apply globally. You can drop per-project `AGENTS.md` files.
 
 ## Using the Template
 
-The [starter](https://github.com/itswil/starter) repo is a base template for new projects. Install it into your current directory:
+The [cove](https://github.com/mugnavo/cove) repo is a base template for new projects. Scaffold a new project with:
 
 ```bash
-npx giget gh:itswil/starter .
+pnpm create cove
 ```
+
+Prerequisites: Node.js >= 24, pnpm >= 12, and the Vite+ CLI (`vp`).
 
 ## Commands
 
+Scripts run through Vite+: `vp <name>` is a built-in command, `vpr <name>` (shorthand for `vp run`) runs a `package.json` script or `vite.config.ts` task.
+
 ```bash
-pnpm dev        # Start dev server
-pnpm build      # Build for production (tsc -b && vite build)
-pnpm preview    # Preview production build
-pnpm fmt        # Format code (oxfmt)
-pnpm fmt:check  # Check formatting (oxfmt --check)
-pnpm lint       # Lint (oxlint)
-pnpm lint:fix   # Lint + autofix (oxlint --fix)
-pnpm test       # Run tests (vitest)
+vpr dev              # Start dev server (http://localhost:3000)
+vpr build            # Build for production (vp build, Nitro output)
+vpr preview          # Preview production build
+vpr format           # Format code (vp fmt / oxfmt)
+vpr format:check     # Check formatting (vp fmt --check)
+vpr lint             # Lint + type check (vp lint --type-aware --type-check)
+vpr lint:fix         # Lint + type check + autofix
+vpr check            # Format, lint, and type check in one pass (vp check)
+vpr test             # Unit/integration tests (Vitest, once)
+vpr test watch       # Vitest in watch mode
+vpr test:e2e         # Build app + Playwright end-to-end tests
+vpr db generate      # Generate Drizzle migration
+vpr db migrate       # Apply migration
+vpr db studio        # Browse database
+vpr ui add <name>    # Add shadcn/ui component
+vpr auth:generate    # Regenerate Better Auth schema after config changes
+vpr env:load         # Validate .env.local against .env.schema (varlock)
+vpr deps             # Selectively upgrade dependencies (taze)
 ```
+
+Run one-off TypeScript/JavaScript scripts with `vpx <file>` — do not add `tsx` or `ts-node`.
 
 ## Git Workflow
 
-- Husky is configured in `.husky/`. The `pre-commit` hook runs `pnpm fmt` and `pnpm lint:fix`. Never check in unformatted or lint-failing code. Run `pnpm fmt` and `pnpm lint` yourself before every commit — never rely on the hook alone.
+- The `pre-commit` hook runs formatting and linting. Never check in unformatted or lint-failing code. Run `vpr check` yourself before every commit — never rely on the hook alone.
 - Work on a feature branch per task and open a PR when done.
 - Use [Conventional Commits](https://www.conventionalcommits.org/):
   - `feat(component): add new feature`
@@ -40,47 +56,43 @@ pnpm test       # Run tests (vitest)
 
 ## Stack
 
-- React 19 + TypeScript
-- Vite (with `@vitejs/plugin-react` and `@tailwindcss/vite`)
-- TailwindCSS v4 (via `@import "tailwindcss"` in `index.css`, no config file)
-- oxlint + oxfmt for linting/formatting
-- Vitest with `vitest-browser-react` + Playwright (Chromium) for browser tests
-- Husky for git hooks
+- React 19 + TypeScript, with TanStack Start + Router + Query (file-based routing, SSR)
+- TailwindCSS v4 + shadcn/ui + Base UI primitives (`class-variance-authority`, `cn`)
+- Drizzle ORM + PostgreSQL (`postgres` driver)
+- Better Auth for authentication
+- Vite+ (`vp`/`vpr`/`vpx` unified toolchain) with Nitro for the production server
+- Varlock for env vars (`.env.schema` is the source of truth; `import { ENV } from "varlock/env"`)
+- evlog for structured request logging
+- Vitest for unit/integration tests, Playwright for e2e
 - pnpm as package manager
 
 ## Project Conventions
 
-- The entry point is `src/main.tsx`. It creates the root and wraps `<App />` in `<StrictMode>`.
-- React components are default-exported function components (see `src/App.tsx`).
-- Colocate tests next to source as `*.test.tsx`. Use `vitest-browser-react`'s `render` and `expect.element(...)` assertions, e.g.:
-  ```tsx
-  import { render } from "vitest-browser-react";
-  import { expect, test } from "vitest";
-  import App from "./App.jsx";
-
-  test("renders the title", async () => {
-    const { getByText } = await render(<App />);
-    await expect.element(getByText("Starter")).toBeVisible();
-  });
-  ```
-- JSX/ESM imports resolve both `.tsx` and `.jsx` extensions.
-- New code goes in `src/components/` (UI), `src/hooks/` (reusable logic), `src/lib/` (utilities), and `src/types/` (shared types). Use kebab-case filenames; component names are PascalCase.
-- Use `import.meta.env.VITE_*` for environment variables. Never commit `.env*` files or hardcode secrets.
-- Styling lives in `src/index.css`. Use Tailwind utility classes via `className` in JSX and Tailwind's `@theme` tokens for colors/spacing instead of arbitrary values. Do not use custom CSS or `!important`.
+- Source lives in `src/`; import via the `#/*` alias (e.g. `#/lib/db/schema`).
+- Use the shadcn CLI (`vpr ui add <component>`) for new UI components & primitives.
+- Use `lucide-react` for UI icons with the `Icon` suffix (e.g. `Loader2Icon`); use `@icons-pack/react-simple-icons` for brand icons (e.g. `SiGithub`).
+- Colocate tests next to source; keep them behavioral (outcomes), not implementation-focused.
+- Keep UI copy user-centered: describe outcomes and next steps without exposing providers, internal states, or implementation details.
+- Never commit `.env*` local files or hardcode secrets. Put local values in `.env.local` and validate with `vpr env:load`. In code, read env via `ENV` from `varlock/env` — never `process.env` directly.
+- Don't run a standalone production build after every change. Use `vpr lint` as the baseline and run the narrowest relevant tests; `vpr test:e2e` performs its own build.
 
 ## Code Style
 
-- Write simple, readable, reusable code. Prefer straightforward solutions over clever or complicated ones — clarity beats brevity.
-- Prefer functional TypeScript code.
-- Prefer `const` arrow functions over `function` declarations.
-- Prefer small, focused components over large ones; extract reusable UI into `src/components/`.
+- Write simple, readable, reusable code. Prefer straightforward solutions for current requirements — introduce abstractions or architectural layers only when there is a concrete need.
+- Keep the main control flow easy to follow. Avoid wrapper layers that merely rename or forward calls, and avoid fragmenting logic across unnecessary files.
+- Extract helpers only when they meaningfully improve readability, reuse, or testability.
+- Prefer functional TypeScript code and `const` arrow functions over `function` declarations.
+- Keep types simple and close to where they are used. Prefer inference; avoid type gymnastics unless necessary.
+- Add concise comments only for non-obvious intent, unusual edge cases, and important constraints. Explain why, not what.
 
 ## Technical Rules
 
-- Keep TypeScript clean under `tsc -b`. No `any`, no `// @ts-ignore` — fix types properly.
+- Keep TypeScript clean under type checking. No `any`, no `// @ts-ignore` — fix types properly.
 - For ad-hoc scripting (automation, one-off tasks, file processing), prefer Bun over Python or Perl where possible.
-- State/data fetching uses plain React hooks and the browser fetch API by default. The Allowed Packages list is the exception — don't add other libraries unless the user asks.
-- Avoid writing raw SQL; use Drizzle ORM's query builder and schema API instead.
+- Data loading/caching/mutations use TanStack Start/Router + Query; server functions and API routes define the server boundary. Don't add other state libraries unless the user asks.
+- Use Drizzle ORM's query builder and schema API — avoid writing raw SQL. The Better Auth schema (`src/lib/db/schema/auth.schema.ts`) is generated — don't hand-edit it; change `src/lib/auth/auth.ts` and run `vpr auth:generate`.
+- Be robust at system boundaries (user input, auth, external APIs, persistence). Within trusted code, rely on established invariants instead of guarding hypothetical states.
+- Handle edge cases in proportion to their likelihood and impact — don't add complexity for contrived, low-impact scenarios.
 
 ### Accessibility
 
@@ -93,11 +105,12 @@ pnpm test       # Run tests (vitest)
 ### Security
 
 - Sanitize and validate all user input with `zod`. Never log secrets or tokens. Use parameterized queries (Drizzle query builder covers this).
-- Server actions/routes must re-validate auth via `better-auth` — don't trust client-supplied identity.
+- Server functions/routes must re-validate auth via Better Auth middleware — don't trust client-supplied identity.
 
 ### Testing
 
 - Write tests for new logic and components; keep them behavioral (outcomes), not implementation-focused.
+- `vpr test` runs Vitest unit/local integration tests; `vpr test:e2e` runs Playwright end-to-end tests.
 - Never commit `test.skip` or `test.only`.
 
 ### Naming
@@ -110,32 +123,27 @@ pnpm test       # Run tests (vitest)
 
 ### Types
 
-- Prefer explicit return types on exported functions; use `zod` inference for data shapes coming from the API.
+- Prefer explicit return types on exported functions; use `zod`/Varlock inference for data shapes coming from the API or env.
 - Use `type` instead of `interface` when declaring types.
 
 ## Asking Before Acting
 
 - Ask before installing new dependencies (`pnpm add`).
-- Ask before changing build/tooling configs: `tsconfig.json`, `.oxlintrc.json`, `.oxfmtrc.json`, `vite.config.ts`.
+- Ask before changing build/tooling configs: `tsconfig.json`, `vite.config.ts`, `nitro.config.ts`, `drizzle.config.ts`, `components.json`.
 - Ask before creating a PR or pushing to a remote — never do it unprompted.
 
 ## Allowed Packages
 
 These may be installed without asking. Anything else requires explicit approval:
 
-- **Routing**: `@tanstack/react-router`, `@tanstack/react-start`
-- **Data fetching**: `@tanstack/react-query`
-- **Forms/validation**: `@tanstack/react-form`, `zod`
-- **Client state**: `@tanstack/react-store`
-- **Icons**: `lucide-react`
-- **Styling**: `tailwindcss`, `clsx`, `tailwind-merge`
+- **UI**: `class-variance-authority`, `cn`, `tw-animate-css`
+- **Icons**: `lucide-react`, `@icons-pack/react-simple-icons`
+- **Data/validation**: `zod`
 - **Utilities**: `date-fns`, `nanoid`
-- **Dev/quality**: `@playwright/test`
-- **Server**: `hono`, `@hono/node-server`
-- **Database/ORM**: `drizzle-orm`, `drizzle-kit`, `better-sqlite3` (SQLite), `@libsql/client` (Turso)
-- **Authentication**: `better-auth`, `bcryptjs`
+- **Dev/quality**: `@playwright/test`, `taze`
+
+The core stack (TanStack Start/Router/Query, Drizzle, Better Auth, Tailwind, shadcn/ui, Varlock, evlog) ships with Cove — prefer its built-in patterns over adding parallel libraries.
 
 ## Linting & Formatting
 
-- Configs live in `.oxlintrc.json` and `.oxfmtrc.json`. Both ignore `dist/**`, `*.min.js`, `node_modules`, and `.husky`.
-- Formatting is handled by oxfmt. TODO characters, quotes, and trailing commas follow oxfmt defaults. Run `pnpm fmt` rather than hand-editing style.
+- Formatting is handled by oxfmt, linting by oxlint — both via Vite+ (`vpr format`, `vpr lint`, or `vpr check` for both). Run `vpr check` rather than hand-editing style.
